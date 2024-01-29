@@ -17,20 +17,32 @@ NEARBY_SEARCH = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?ke
 PLACE_ID = "ChIJa_rEoF9uQUYRrFqJ3brGxfs"
 client = MongoClient(CONNECT)
 print(client.list_database_names())
-db = client.eksamen
-print(db.list_collection_names())
-user = db.users
-u = {"Name": "Obama"}
-
-
+db = client["place"]
+col = db["place"]
+print(col.find().next())
+u = '{"name":"greasy kebab","score":2.4,"reviews":["Elendig","Forferdelig"]}'
+u = json.loads(u)
+x = col.insert_one(u)
+exit(2)
 def get_locations():
     with urllib.request.urlopen(NEARBY_SEARCH + API_KEY) as response:
         data = response.read()
         data = json.loads(data)
-        l = data["results"]
-        print(l)
-        for i in l:
-            print(json.dumps(i, indent=4))
+        data = data["results"]
+        data = data[0]
+        print(data)
+        for n in data:
+            name = data['name']
+            rating = str(data['rating'])
+            place_id = data['place_id']
+            place = {
+                "name:" + name + ","
+                                 "rating:" + rating + ","
+                                                      "place_id:" + place_id
+            }
+            print(place)
+
+            # print(json.dumps(n, indent=4))
             exit(1)
 
             # print(json.dumps(data, indent=4))
