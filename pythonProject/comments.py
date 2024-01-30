@@ -16,14 +16,13 @@ NEARBY_SEARCH = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?ke
 
 PLACE_ID = "ChIJa_rEoF9uQUYRrFqJ3brGxfs"
 client = MongoClient(CONNECT)
-print(client.list_database_names())
 db = client["place"]
 col = db["place"]
-print(col.find().next())
-u = '{"name":"greasy kebab","score":2.4,"reviews":["Elendig","Forferdelig"]}'
-u = json.loads(u)
-x = col.insert_one(u)
-exit(2)
+
+
+# print(col.find().next())
+
+
 def get_locations():
     with urllib.request.urlopen(NEARBY_SEARCH + API_KEY) as response:
         data = response.read()
@@ -31,25 +30,32 @@ def get_locations():
         data = data["results"]
         data = data[0]
         print(data)
+
         for n in data:
             name = data['name']
-            rating = str(data['rating'])
+            score = str(data['rating'])
             place_id = data['place_id']
-            place = {
-                "name:" + name + ","
-                                 "rating:" + rating + ","
-                                                      "place_id:" + place_id
-            }
-            print(place)
-
-            # print(json.dumps(n, indent=4))
-            exit(1)
+            reviews = get_reviews(place_id)
+            add_place_to_db(name, score, reviews)
 
             # print(json.dumps(data, indent=4))
         # result = user.insert_one(u)
 
 
-get_locations()
+def add_place_to_db(name, score, reviews):
+
+    print(reviews)
+    place = {
+        "name": name,
+        "score": score,
+        "reviews": reviews
+    }
+    # place = json.loads(place)
+    print(place)
+
+    x = col.insert_one(place)
+    exit(2)
+
 
 # res = gmaps.places.nearby_search(location = '59.922498, 10.751539', radius = 100, open_now = False, type='resturant')  #gmaps.places(query='Eineåsen skole')
 # print(res.get('results'))
@@ -61,13 +67,16 @@ get_locations()
 # data = json.loads(my_json)
 
 # print(res)
+def get_reviews(place_id):
+    with urllib.request.urlopen(
+            'https://maps.googleapis.com/maps/api/place/details/json?fields=name%2Crating%2Creviews&place_id=' + place_id + '&key=' + API_KEY) as response:
+        res = json.loads(response.read())
+        res = res['result']['reviews']
+        # my_json = res.decode('utf8').replace("'", '"')
+        for i in res:
+            print(i['rating'])
+            print(i['text'] + "\n")
+            # print(res['result']['reviews'][]['rating'])
+        return res
 
-with urllib.request.urlopen(
-        'https://maps.googleapis.com/maps/api/place/details/json?fields=name%2Crating%2Creviews&place_id=' + PLACE_ID + '&key=' + API_KEY) as response:
-    res = json.loads(response.read())
-    # my_json = res.decode('utf8').replace("'", '"')
-    # data = json.loads(my_json)
-    for i in res['result']['reviews']:
-        print(i['rating'])
-        print(i['text'] + "\n")
-        # print(res['result']['reviews'][]['rating'])
+get_locations()
