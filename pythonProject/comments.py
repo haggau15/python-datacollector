@@ -28,45 +28,28 @@ def get_locations():
         data = response.read()
         data = json.loads(data)
         data = data["results"]
-        data = data[0]
-        print(data)
 
         for n in data:
-            name = data['name']
-            score = str(data['rating'])
-            place_id = data['place_id']
+            name = n['name']
+            score = str(n['rating'])
+            place_id = n['place_id']
             reviews = get_reviews(place_id)
-            add_place_to_db(name, score, reviews)
+            add_place_to_db(place_id, name, score, reviews)
 
             # print(json.dumps(data, indent=4))
         # result = user.insert_one(u)
 
 
-def add_place_to_db(name, score, reviews):
-
-    print(reviews)
+def add_place_to_db(place_id, name, score, reviews):
     place = {
+        "place_id": place_id,
         "name": name,
         "score": score,
         "reviews": reviews
     }
-    # place = json.loads(place)
-    print(place)
-
     x = col.insert_one(place)
-    exit(2)
 
 
-# res = gmaps.places.nearby_search(location = '59.922498, 10.751539', radius = 100, open_now = False, type='resturant')  #gmaps.places(query='Eineåsen skole')
-# print(res.get('results'))
-
-
-# with urllib.request.urlopen('https://maps.googleapis.com/maps/api/place/details/json?place_id=ChIJa_rEoF9uQUYRrFqJ3brGxfs&fields=place_id&reviews&key='+API_KEY) as response:
-# res = response.read()
-# my_json = res.decode('utf8').replace("'", '"')
-# data = json.loads(my_json)
-
-# print(res)
 def get_reviews(place_id):
     with urllib.request.urlopen(
             'https://maps.googleapis.com/maps/api/place/details/json?fields=name%2Crating%2Creviews&place_id=' + place_id + '&key=' + API_KEY) as response:
@@ -78,5 +61,6 @@ def get_reviews(place_id):
             print(i['text'] + "\n")
             # print(res['result']['reviews'][]['rating'])
         return res
+
 
 get_locations()
