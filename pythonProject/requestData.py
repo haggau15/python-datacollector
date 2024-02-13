@@ -1,7 +1,8 @@
 from flask import Flask, request
+import pika
+from pika import channel
 
 app = Flask(__name__)
-
 
 @app.route('/requestdata', methods=['POST'])
 def handle_post():
